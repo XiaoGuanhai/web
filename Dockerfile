@@ -15,14 +15,13 @@ ENV PHP_USER_ID=33 \
     ORACLE_HOME=/usr/local/instantclient
 # 添加自定义配置文件
 COPY files/ /
-## 使用阿里云源
-#RUN echo \
-#    deb http://mirrors.163.com/debian/ buster main non-free contrib \
-#    deb http://mirrors.163.com/debian-security/ buster/updates main non-free contrib \
-#    deb http://mirrors.163.com/debian/ buster-updates main non-free contrib \
-#    > /etc/apt/sources.list \
+## 使用网易源
+RUN echo \
+    deb http://mirrors.163.com/debian/ buster main non-free contrib \
+    deb-src http://mirrors.163.com/debian/ buster main non-free contrib \
+    > /etc/apt/sources.list \
 ## 安装软件
-RUN apt-get update \
+    && apt-get update \
     && apt-get -y install \
         g++ \
         git \
