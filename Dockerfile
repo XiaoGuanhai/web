@@ -91,6 +91,7 @@ RUN docker-php-ext-configure gd \
 #       igbinary \
 #       xdebug \
     # 需要7.0以上
+        /tmp/pear/download/redis-5.1.1.tgz \
         /tmp/pear/download/imagick-3.4.4.tgz \
         /tmp/pear/download/mongodb-1.6.1.tgz \
         /tmp/pear/download/igbinary-3.1.0.tgz \
@@ -99,7 +100,8 @@ RUN docker-php-ext-configure gd \
         imagick \
         mongodb \
         igbinary \
-        xdebug
+        xdebug \
+        redis
 ### 配置GITHUB TOKEN
 # Add GITHUB_API_TOKEN support for composer
 #    && chmod 700 \

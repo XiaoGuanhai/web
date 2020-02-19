@@ -5,7 +5,7 @@
 
 已安装的模块包括：
 `soap`, `zip`, `curl`, `bcmath`, `exif`, `gd`, `iconv`, `intl`, `mbstring`, 
-`opcache`, `pdo_mysql`, `pdo_pgsql`, `mysqli`, `imagick`, `mongodb`, `igbinary`, `xdebug`, `oci8`
+`opcache`, `pdo_mysql`, `pdo_pgsql`, `mysqli`, `imagick`, `mongodb`, `igbinary`, `xdebug`, `oci8`, `redis`
 
 #### 使用说明
 ```yaml
@@ -49,5 +49,5 @@ sudo yum install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum swap git git2u
 ```
 
-
+*** 其他php版本的支持之后再更新 ***
 
