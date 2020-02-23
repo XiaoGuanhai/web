@@ -124,6 +124,8 @@ RUN cp /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime \
     && if command -v a2enmod >/dev/null 2>&1; then \
         a2enmod rewrite headers \
     ;fi \
+    # 配置默认域名
+    echo "ServerName localhost" | tee /etc/apache2/conf-available/localhost.conf && a2enconf localhost \
     # 清空缓存
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/
