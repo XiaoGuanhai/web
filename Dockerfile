@@ -17,17 +17,16 @@ ENV PHP_USER_ID=33 \
 COPY files/ /
 ## 使用网易源
 RUN echo \
-    deb http://mirrors.163.com/debian/ buster main non-free contrib \
-    deb-src http://mirrors.163.com/debian/ buster main non-free contrib \
-    > /etc/apt/sources.list \
-## 安装软件
-    && apt-get update \
-    && apt-get -y install \
+    deb http://mirrors.163.com/debian buster main \
+    deb http://mirrors.163.com/debian-security buster/updates main \
+    deb http://mirrors.163.com/debian buster-updates main \
+    > /etc/apt/sources.list
+## 安装应用
+RUN apt-get -y install \
         g++ \
         git \
         curl \
         imagemagick \
-        libcurl3-dev \
         libicu-dev \
         libfreetype6-dev \
         libjpeg-dev \
@@ -69,7 +68,7 @@ RUN docker-php-ext-configure gd \
         pdo_pgsql \
         mysqli \
     # 安装OCI扩展
-    && unzip -o /tmp/instantclient-basic-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
+RUN unzip -o /tmp/instantclient-basic-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
     && unzip -o /tmp/instantclient-sdk-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
     && unzip -o /tmp/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
     && ln -s /usr/local/instantclient_12_2 /usr/local/instantclient \
@@ -86,22 +85,22 @@ RUN docker-php-ext-configure gd \
     # 安装其他扩展
     # @see http://stackoverflow.com/a/8154466/291573) for usage of `printf`
     && printf "\n" | pecl install \
-#       imagick \
+       imagick \
 #       mongodb \
-#       igbinary \
+       igbinary \
 #       xdebug \
     # 需要7.0以上
-        /tmp/pear/download/redis-5.1.1.tgz \
+#        /tmp/pear/download/redis-5.1.1.tgz \
         /tmp/pear/download/imagick-3.4.4.tgz \
-        /tmp/pear/download/mongodb-1.6.1.tgz \
+#        /tmp/pear/download/mongodb-1.6.1.tgz \
         /tmp/pear/download/igbinary-3.1.0.tgz \
-        /tmp/pear/download/xdebug-2.9.0.tgz \
+#        /tmp/pear/download/xdebug-2.9.0.tgz \
     && docker-php-ext-enable \
         imagick \
-        mongodb \
+#        mongodb \
         igbinary \
-        xdebug \
-        redis
+#        xdebug \
+#        redis
 ### 配置GITHUB TOKEN
 # Add GITHUB_API_TOKEN support for composer
 #    && chmod 700 \
@@ -118,14 +117,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
 #    composer clear-cache
 ## 设置系统
 RUN cp /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime \
-    # 配置时区
     && echo "Asia/Hong_Kong" >  /etc/timezone \
-    # 配置Apache
-    && if command -v a2enmod >/dev/null 2>&1; then \
+    if command -v a2enmod >/dev/null 2>&1 then \
         a2enmod rewrite headers \
-    ;fi \
-    # 配置默认域名
-    echo "ServerName localhost" | tee /etc/apache2/conf-available/localhost.conf && a2enconf localhost \
+    fi \
+    && echo "ServerName localhost" | tee /etc/apache2/conf-available/localhost.conf && a2enconf localhost \
     # 清空缓存
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/
