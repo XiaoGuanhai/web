@@ -1,7 +1,7 @@
 # @author Siu <xiaoguanhai@gmail.com>
 # @link http://www.ddtechs.cn
 ARG PHP_VERSION=7.3
-FROM php:${PHP_VERSION}-apache
+FROM amd64/php:${PHP_VERSION}-apache
 ENV DEBIAN_FRONTEND=noninteractive
 # 环境设置
 ENV PHP_USER_ID=33 \
@@ -15,18 +15,13 @@ ENV PHP_USER_ID=33 \
     ORACLE_HOME=/usr/local/instantclient
 # 添加自定义配置文件
 COPY files/ /
-## 使用网易源
-RUN echo \
-    deb http://mirrors.163.com/debian buster main \
-    deb http://mirrors.163.com/debian-security buster/updates main \
-    deb http://mirrors.163.com/debian buster-updates main \
-    > /etc/apt/sources.list
 ## 安装应用
-RUN apt-get -y install \
+RUN apt-get update \
+    && apt-get -y install \
         g++ \
-        git \
         curl \
         imagemagick \
+        libcurl3-dev \
         libicu-dev \
         libfreetype6-dev \
         libjpeg-dev \
@@ -66,8 +61,8 @@ RUN docker-php-ext-configure gd \
         opcache \
         pdo_mysql \
         pdo_pgsql \
-        mysqli \
-    # 安装OCI扩展
+        mysqli
+### 安装OCI扩展
 RUN unzip -o /tmp/instantclient-basic-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
     && unzip -o /tmp/instantclient-sdk-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
     && unzip -o /tmp/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
@@ -77,30 +72,18 @@ RUN unzip -o /tmp/instantclient-basic-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
     && ln -s /usr/local/instantclient/libocci.so.12.1 /usr/local/instantclient/libocci.so \
     && ln -s /usr/local/instantclient/sqlplus /usr/bin/sqlplus \
     && echo 'instantclient,/usr/local/instantclient' | pecl install /tmp/pear/download/oci8-2.2.0.tgz \
-    && docker-php-ext-enable \
-                      oci8 \
-    && docker-php-ext-configure pdo_oci \
-        --with-pdo-oci=instantclient,/usr/local/instantclient \
-    && docker-php-ext-install pdo_oci \
+    && docker-php-ext-enable oci8 \
+    && docker-php-ext-configure pdo_oci --with-pdo-oci=instantclient,/usr/local/instantclient \
+    && docker-php-ext-install pdo_oci
     # 安装其他扩展
     # @see http://stackoverflow.com/a/8154466/291573) for usage of `printf`
-    && printf "\n" | pecl install \
-       imagick \
-#       mongodb \
-       igbinary \
-#       xdebug \
-    # 需要7.0以上
-#        /tmp/pear/download/redis-5.1.1.tgz \
+RUN printf "\n" | pecl install \
+        /tmp/pear/download/redis-5.1.1.tgz \
         /tmp/pear/download/imagick-3.4.4.tgz \
-#        /tmp/pear/download/mongodb-1.6.1.tgz \
+        /tmp/pear/download/mongodb-1.6.1.tgz \
         /tmp/pear/download/igbinary-3.1.0.tgz \
-#        /tmp/pear/download/xdebug-2.9.0.tgz \
-    && docker-php-ext-enable \
-        imagick \
-#        mongodb \
-        igbinary \
-#        xdebug \
-#        redis
+        /tmp/pear/download/xdebug-2.9.0.tgz \
+    && docker-php-ext-enable imagick mongodb igbinary xdebug redis
 ### 配置GITHUB TOKEN
 # Add GITHUB_API_TOKEN support for composer
 #    && chmod 700 \
@@ -110,20 +93,19 @@ RUN unzip -o /tmp/instantclient-basic-linux.x64-12.2.0.1.0.zip -d /usr/local/ \
 RUN curl -sS https://getcomposer.org/installer | php -- \
         --filename=composer.phar \
         --install-dir=/usr/local/bin
-### 安装 composer 插件
-#    && composer global require --optimize-autoloader \
-#        "hirak/prestissimo:${VERSION_PRESTISSIMO_PLUGIN}" \
+#### 安装 composer 插件
+#RUN composer global require --optimize-autoloader "hirak/prestissimo" \
 #    composer global dumpautoload --optimize \
 #    composer clear-cache
-## 设置系统
+# 设置系统
 RUN cp /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime \
     && echo "Asia/Hong_Kong" >  /etc/timezone \
-    if command -v a2enmod >/dev/null 2>&1 then \
-        a2enmod rewrite headers \
-    fi \
-    && echo "ServerName localhost" | tee /etc/apache2/conf-available/localhost.conf && a2enconf localhost \
-    # 清空缓存
-    && apt-get clean \
+    && echo "ServerName localhost" | tee /etc/apache2/conf-available/localhost.conf && a2enconf localhost
+RUN if command -v a2enmod >/dev/null 2>&1; then \
+        a2enmod rewrite headers; \
+    fi
+# 清空缓存
+RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/
-# Application environment
+#
 WORKDIR /app
