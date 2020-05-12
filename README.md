@@ -51,3 +51,6 @@ sudo yum swap git git2u
 
 *** 其他php版本的支持之后再更新 ***
 
+
+#### 其他命令
+docker build --build-arg PHP_VERSION=7.3 --no-cache 

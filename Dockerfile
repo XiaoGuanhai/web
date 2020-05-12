@@ -1,7 +1,7 @@
 # @author Siu <xiaoguanhai@gmail.com>
 # @link http://www.ddtechs.cn
 ARG PHP_VERSION=7.3
-FROM amd64/php:${PHP_VERSION}-apache
+FROM php:${PHP_VERSION}-apache
 ENV DEBIAN_FRONTEND=noninteractive
 # 环境设置
 ENV PHP_USER_ID=33 \
